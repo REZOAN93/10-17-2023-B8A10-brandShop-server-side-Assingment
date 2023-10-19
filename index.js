@@ -50,6 +50,7 @@ async function run() {
       const detailsProduct = await ProductCollection.findOne(query);
       res.send(detailsProduct);
     })
+
     app.post("/addProducts", async (req, res) => {
       const newProducts = req.body;
       const result = await ProductCollection.insertOne(newProducts);
@@ -57,9 +58,25 @@ async function run() {
     });
 
     app.post("/userProducts", async (req, res) => {
-      const userproduct = req.body;
-      const result = UserProductCollection.insertOne(userproduct);
+      const userProduct = req.body;
+      const result = UserProductCollection.insertOne(userProduct);
       res.send(result);
+      console.log(result)
+    });
+
+    app.get("/userProducts", async (req, res) => {
+      const cursor = UserProductCollection.find();
+      const userProductDetails = await cursor.toArray();
+      res.send(userProductDetails);
+    });
+
+    app.delete("/UserProductsData/:id", async (req, res) => {
+      const newId = req.params.id;
+      console.log(newId)
+      const query = { _id: new ObjectId(newId) };
+      const result = await UserProductCollection.deleteOne(query);
+      res.send(result);
+      console.log(result)
     });
 
 
