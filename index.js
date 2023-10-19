@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -27,6 +27,8 @@ async function run() {
     const database = client.db("BrandShop");
     const BrandNames = database.collection("BrandNames");
     const ProductCollection = database.collection("ProductCollection");
+    const UserProductCollection = database.collection("UserProductCollection");
+    const userCollection = database.collection("UserCollection");
 
     app.get("/brands", async (req, res) => {
       const cursor = BrandNames.find();
@@ -34,7 +36,6 @@ async function run() {
       res.send(brandsDetails);
     });
    
-
     app.get("/brands/:id", async(req, res) => {
       const id = req.params.id;
       const query = { brand: id };
@@ -43,11 +44,63 @@ async function run() {
       res.send(brandProducts);
     });
 
+    app.get('/productdetails/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const detailsProduct = await ProductCollection.findOne(query);
+      res.send(detailsProduct);
+    })
     app.post("/addProducts", async (req, res) => {
       const newProducts = req.body;
       const result = await ProductCollection.insertOne(newProducts);
       res.send(result);
     });
+
+    app.post("/userProducts", async (req, res) => {
+      const userproduct = req.body;
+      const result = UserProductCollection.insertOne(userproduct);
+      res.send(result);
+    });
+
+
+     // User Related APIS
+
+     app.post("/user", async (req, res) => {
+      const newUser = req.body;
+      const result = userCollection.insertOne(newUser);
+      res.send(result);
+      console.log(newUser);
+    });
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const allUsers = await cursor.toArray();
+      res.send(allUsers);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const newId = req.params.id;
+      const query = { _id: new ObjectId(newId) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.put("/users", async (req, res) => {
+      const data = req.body;
+      const email = data.emailInfo;
+
+      console.log(email, "in Database");
+      const filter = { email: email };
+      const updateDoc = {
+        $set: {
+          LastLogInTime: data.userLastSign,
+        },
+      };
+      const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+
   } finally {
     // await client.close();
   }
