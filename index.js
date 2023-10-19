@@ -26,11 +26,27 @@ async function run() {
 
     const database = client.db("BrandShop");
     const BrandNames = database.collection("BrandNames");
+    const ProductCollection = database.collection("ProductCollection");
 
     app.get("/brands", async (req, res) => {
       const cursor = BrandNames.find();
       const brandsDetails = await cursor.toArray();
       res.send(brandsDetails);
+    });
+   
+
+    app.get("/brands/:id", async(req, res) => {
+      const id = req.params.id;
+      const query = { brand: id };
+      const cursor = ProductCollection.find(query);
+      const brandProducts = await cursor.toArray();
+      res.send(brandProducts);
+    });
+
+    app.post("/addProducts", async (req, res) => {
+      const newProducts = req.body;
+      const result = await ProductCollection.insertOne(newProducts);
+      res.send(result);
     });
   } finally {
     // await client.close();
