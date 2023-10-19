@@ -35,8 +35,8 @@ async function run() {
       const brandsDetails = await cursor.toArray();
       res.send(brandsDetails);
     });
-   
-    app.get("/brands/:id", async(req, res) => {
+
+    app.get("/brands/:id", async (req, res) => {
       const id = req.params.id;
       const query = { brand: id };
       const cursor = ProductCollection.find(query);
@@ -44,12 +44,12 @@ async function run() {
       res.send(brandProducts);
     });
 
-    app.get('/productdetails/:id',async(req,res)=>{
+    app.get("/productdetails/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const detailsProduct = await ProductCollection.findOne(query);
       res.send(detailsProduct);
-    })
+    });
 
     app.post("/addProducts", async (req, res) => {
       const newProducts = req.body;
@@ -61,7 +61,7 @@ async function run() {
       const userProduct = req.body;
       const result = UserProductCollection.insertOne(userProduct);
       res.send(result);
-      console.log(result)
+      console.log(result);
     });
 
     app.get("/userProducts", async (req, res) => {
@@ -72,17 +72,42 @@ async function run() {
 
     app.delete("/UserProductsData/:id", async (req, res) => {
       const newId = req.params.id;
-      console.log(newId)
+      console.log(newId);
       const query = { _id: new ObjectId(newId) };
       const result = await UserProductCollection.deleteOne(query);
       res.send(result);
-      console.log(result)
+      console.log(result);
     });
 
+    app.put("/update/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedProducts = req.body;
+      console.log(id, updatedProducts);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        // brand,name,type,price,description,photoURL,cover,rating
+        $set: {
+          brand: updatedProducts.brand,
+          name: updatedProducts.name,
+          type: updatedProducts.type,
+          price: updatedProducts.price,
+          description: updatedProducts.description,
+          photoURL: updatedProducts.photoURL,
+          cover: updatedProducts.cover,
+          rating: updatedProducts.rating,
+        },
+      };
+      const result = await ProductCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
 
-     // User Related APIS
-
-     app.post("/user", async (req, res) => {
+    // User Related APIS
+    app.post("/user", async (req, res) => {
       const newUser = req.body;
       const result = userCollection.insertOne(newUser);
       res.send(result);
@@ -116,8 +141,6 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-
-
   } finally {
     // await client.close();
   }
